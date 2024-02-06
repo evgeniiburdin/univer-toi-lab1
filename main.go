@@ -31,6 +31,7 @@ func main() {
 
 	fmt.Println(`Give me a string to encode (don't forget to end it with "!" stop sign"): `)
 	_, err := fmt.Scanln(&stringToEncode)
+	fmt.Print("\n")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Decoded message is: %v\n", result)
+	fmt.Printf("\n\nDecoded message is: %v\n", result)
 }
 
 // A function to encode a given string, returning the stop sign code, and a map needed to decode the string
@@ -82,13 +83,16 @@ func Encode(inputStr string) (float64, map[string]interval) {
 
 		// On each iteration we take the next symbol in the string and make it boundaries the new boundaries of our whole line segment
 		currentSymbol := string(inputStr[i])
-		fmt.Printf("\nCurrent Symbol: %v(%v), [%v of %v]    ", currentSymbol, intervalMap[currentSymbol].Length, i, strLen)
+		fmt.Printf("\nCurrent Symbol: %v,    ", currentSymbol)
 
 		var nextInterval interval
 		nextInterval.LeftBound = tempIterMap[currentSymbol].LeftBound
 		nextInterval.RightBound = tempIterMap[currentSymbol].RightBound
 		nextInterval.Length = nextInterval.RightBound - nextInterval.LeftBound
-		fmt.Printf("Next Interval: %v\n", nextInterval)
+
+		leftBound := fmt.Sprintf("%.6f", nextInterval.LeftBound)
+		rightBound := fmt.Sprintf("%.6f", nextInterval.RightBound)
+		fmt.Printf("Interval: {%v...%v}    [%v of %v]\n", leftBound, rightBound, i+1, strLen)
 
 		// Then we allocate new intervals of each letter according to the ratio of the character interval to the segment(that became different after the previous step)
 		PreviousRightBound = nextInterval.LeftBound
@@ -103,9 +107,11 @@ func Encode(inputStr string) (float64, map[string]interval) {
 
 			tempIterMap[strKeys[j]] = newMapValue
 
-			fmt.Printf("new interval for %v is %v\n", strKeys[j], newMapValue)
+			leftBound := fmt.Sprintf("%.6f", newMapValue.LeftBound)
+			rightBound := fmt.Sprintf("%.6f", newMapValue.RightBound)
+			fmt.Printf("new interval for %v is {%v...%v}\n", strKeys[j], leftBound, rightBound)
 		}
-		fmt.Printf("%v\n", tempIterMap)
+		//fmt.Printf("%v\n", tempIterMap)
 	}
 
 	// When we approach the last symbol of our string, it is the stop symbol, that is meant to be returned atfer using Encode function
@@ -118,6 +124,8 @@ func Encode(inputStr string) (float64, map[string]interval) {
 // A function, taking the stop sign code and the interval map needed to decode a string
 func Decode(stopSignCode float64, intervalMap map[string]interval) (string, error) {
 	var outText string
+
+	fmt.Println("\nDecoding...")
 
 	// Taking all the symbols the string contains
 	strKeys := Keys(intervalMap)
@@ -153,8 +161,11 @@ func Decode(stopSignCode float64, intervalMap map[string]interval) (string, erro
 		nextInterval.RightBound = tempIterMap[currentSymbol].RightBound
 		nextInterval.Length = nextInterval.RightBound - nextInterval.LeftBound
 		PreviousRightBound := nextInterval.LeftBound
-		fmt.Printf("\nDecoded Symbol: %v", currentSymbol)
-		fmt.Printf("Next Interval: %v\n", nextInterval)
+		fmt.Printf("\nDecoded Symbol: %v    ", currentSymbol)
+
+		leftBound := fmt.Sprintf("%.6f", nextInterval.LeftBound)
+		rightBound := fmt.Sprintf("%.6f", nextInterval.RightBound)
+		fmt.Printf("Next Interval: {%v...%v}\n", leftBound, rightBound)
 
 		// Then we allocate new intervals of each letter according to the ratio of the character interval to the segment(that became different after the previous step)
 		for j := range strKeys {
@@ -166,10 +177,12 @@ func Decode(stopSignCode float64, intervalMap map[string]interval) (string, erro
 			newMapValue.RightBound = newMapValue.LeftBound + float64(nextInterval.Length*symbolInterval)
 			newMapValue.Length = newMapValue.RightBound - newMapValue.LeftBound
 
-			fmt.Printf("new interval for %v is %v\n", strKeys[j], newMapValue)
+			leftBound := fmt.Sprintf("%.6f", newMapValue.LeftBound)
+			rightBound := fmt.Sprintf("%.6f", newMapValue.RightBound)
+			fmt.Printf("new interval for %v is {%v...%v}\n", strKeys[j], leftBound, rightBound)
 			tempIterMap[strKeys[j]] = newMapValue
 			PreviousRightBound = newMapValue.RightBound
 		}
-		fmt.Printf("%v\n", tempIterMap)
+		//fmt.Printf("%v\n", tempIterMap)
 	}
 }
